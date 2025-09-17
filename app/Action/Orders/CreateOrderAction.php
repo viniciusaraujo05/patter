@@ -2,33 +2,37 @@
 
 namespace App\Action\Orders;
 
+use App\Models\Orders;
 use App\Repositories\Interfaces\OrdersRepositoryInterface;
+use App\Services\PaymentService;
+use Illuminate\Support\Collection;
 
 class CreateOrderAction
 {
     public function __construct(
-        private OrdersRepositoryInterface $ordersRepository
+        private OrdersRepositoryInterface $ordersRepository,
+        private PaymentService $paymentService
     ) {}
 
-    public function execute(array $orderData)
+    /*
+    * @param array $orderData
+    * @return Orders
+    */
+    public function execute(array $orderData): Orders
     {
         try {
-            // Validate required fields
-            $requiredFields = ['user_id', 'product_id', 'quantity', 'amount'];
-            foreach ($requiredFields as $field) {
-                if (!isset($orderData[$field])) {
-                    throw new \InvalidArgumentException("The field {$field} is required");
-                }
-            }
-
             $orderData = array_merge([
-                'payment_method' => 'credit_card',
                 'payment_status' => 'pending',
             ], $orderData);
 
-            return $this->ordersRepository->createOrder($orderData);
+            $order = $this->ordersRepository->createOrder($orderData);
+
+            // Processa o pagamento com a estratégia apropriada
+            $this->paymentService->processPayment($order);
+
+            return $order;
         } catch (\Exception $e) {
-            throw new \RuntimeException('Failed to create order: ' . $e->getMessage());
+            throw new \RuntimeException('Falha ao criar pedido: ' . $e->getMessage());
         }
     }
 }

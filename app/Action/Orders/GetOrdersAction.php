@@ -3,6 +3,7 @@
 namespace App\Action\Orders;
 
 use App\Repositories\Interfaces\OrdersRepositoryInterface;
+use Illuminate\Support\Collection;
 
 class GetOrdersAction
 {
@@ -10,7 +11,10 @@ class GetOrdersAction
         private OrdersRepositoryInterface $ordersRepository
     ) {}
 
-    public function execute()
+    /*
+    * @return Collection
+    */
+    public function execute(): Collection
     {
         try {
             return $this->ordersRepository->getAllOrders();

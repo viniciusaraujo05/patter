@@ -18,10 +18,11 @@ class OrdersRepository implements OrdersRepositoryInterface
 
     /*
     * @return Orders    
+    * @throws \Illuminate\Database\Eloquent\ModelNotFoundException
     */
     public function getOrderById(int $id): Orders
     {
-        return Orders::find($id);
+        return Orders::findOrFail($id);
     }
 
     /*
@@ -50,5 +51,14 @@ class OrdersRepository implements OrdersRepositoryInterface
         $order = Orders::find($id);
         $order->delete();
         return $order;
+    }
+
+    /*
+    * @return void
+    */
+    public function paymentStatus(int $id, string $status): void
+    {
+        $order = Orders::find($id);
+        $order->update(['payment_status' => $status]);
     }
 }
